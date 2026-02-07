@@ -41,6 +41,14 @@ class HomeScreen extends ConsumerWidget {
         title: const Text('Health Record'),
         actions: [
           IconButton(
+            icon: const Icon(Icons.calendar_month),
+            onPressed: () => context.push('/history'),
+          ),
+          IconButton(
+            icon: const Icon(Icons.settings),
+            onPressed: () => context.push('/settings'),
+          ),
+          IconButton(
             icon: const Icon(Icons.sync),
             onPressed: () async {
               final service = ref.read(healthServiceProvider);

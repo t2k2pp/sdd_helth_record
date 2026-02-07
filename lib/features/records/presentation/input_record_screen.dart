@@ -110,7 +110,7 @@ class _InputRecordScreenState extends ConsumerState<InputRecordScreen> {
     final state = ref.watch(inputRecordControllerProvider);
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Add Record')),
+      appBar: AppBar(title: const Text('Add Daily Record'), centerTitle: true),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(16.0),
         child: Form(
@@ -118,73 +118,62 @@ class _InputRecordScreenState extends ConsumerState<InputRecordScreen> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              Card(
-                child: ListTile(
-                  title: Text(
-                    'Date: ${_selectedDate.year}-${_selectedDate.month}-${_selectedDate.day} ${_selectedDate.hour}:${_selectedDate.minute.toString().padLeft(2, '0')}',
+              _buildDateCard(context),
+              const SizedBox(height: 16),
+              _buildSectionTitle('Body Measurements'),
+              const SizedBox(height: 8),
+              Row(
+                children: [
+                  Expanded(
+                    child: _buildNumberInput(
+                      controller: _weightController,
+                      label: 'Weight',
+                      suffix: 'kg',
+                      icon: Icons.monitor_weight_outlined,
+                    ),
                   ),
-                  trailing: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      IconButton(
-                        icon: const Icon(Icons.calendar_today),
-                        onPressed: () => _selectDate(context),
-                      ),
-                      IconButton(
-                        icon: const Icon(Icons.access_time),
-                        onPressed: () => _selectTime(context),
-                      ),
-                    ],
+                  const SizedBox(width: 16),
+                  Expanded(
+                    child: _buildNumberInput(
+                      controller: _tempController,
+                      label: 'Temp',
+                      suffix: '°C',
+                      icon: Icons.thermostat_outlined,
+                    ),
                   ),
-                ),
+                ],
               ),
               const SizedBox(height: 16),
-              TextFormField(
-                controller: _weightController,
-                decoration: const InputDecoration(
-                  labelText: 'Weight (kg)',
-                  border: OutlineInputBorder(),
-                ),
-                keyboardType: const TextInputType.numberWithOptions(
-                  decimal: true,
-                ),
+              Row(
+                children: [
+                  Expanded(
+                    child: _buildNumberInput(
+                      controller: _waistController,
+                      label: 'Waist',
+                      suffix: 'cm',
+                      icon: Icons.straighten_outlined,
+                    ),
+                  ),
+                  const SizedBox(width: 16),
+                  Expanded(
+                    child: _buildNumberInput(
+                      controller: _stepsController,
+                      label: 'Steps',
+                      icon: Icons.directions_walk_outlined,
+                      isInt: true,
+                    ),
+                  ),
+                ],
               ),
-              const SizedBox(height: 16),
-              TextFormField(
-                controller: _tempController,
-                decoration: const InputDecoration(
-                  labelText: 'Temperature (°C)',
-                  border: OutlineInputBorder(),
-                ),
-                keyboardType: const TextInputType.numberWithOptions(
-                  decimal: true,
-                ),
-              ),
-              const SizedBox(height: 16),
-              TextFormField(
-                controller: _waistController,
-                decoration: const InputDecoration(
-                  labelText: 'Waist (cm)',
-                  border: OutlineInputBorder(),
-                ),
-                keyboardType: const TextInputType.numberWithOptions(
-                  decimal: true,
-                ),
-              ),
-              const SizedBox(height: 16),
-              TextFormField(
-                controller: _stepsController,
-                decoration: const InputDecoration(
-                  labelText: 'Steps',
-                  border: OutlineInputBorder(),
-                ),
-                keyboardType: TextInputType.number,
-              ),
-              const SizedBox(height: 16),
+              const SizedBox(height: 24),
+              _buildSectionTitle('Notes'),
+              const SizedBox(height: 8),
               TextFormField(
                 controller: _exerciseController,
                 decoration: const InputDecoration(
-                  labelText: 'Exercise Note',
+                  labelText: 'Exercise',
+                  hintText: 'Running, Gym, etc.',
+                  prefixIcon: Icon(Icons.fitness_center),
                   border: OutlineInputBorder(),
                 ),
                 maxLines: 2,
@@ -193,13 +182,15 @@ class _InputRecordScreenState extends ConsumerState<InputRecordScreen> {
               TextFormField(
                 controller: _diaryController,
                 decoration: const InputDecoration(
-                  labelText: 'Diary Note',
+                  labelText: 'Diary / Comments',
+                  hintText: 'How was your day?',
+                  prefixIcon: Icon(Icons.book),
                   border: OutlineInputBorder(),
                 ),
                 maxLines: 3,
               ),
-              const SizedBox(height: 24),
-              FilledButton(
+              const SizedBox(height: 32),
+              FilledButton.icon(
                 onPressed: state.isLoading
                     ? null
                     : () async {
@@ -225,14 +216,94 @@ class _InputRecordScreenState extends ConsumerState<InputRecordScreen> {
                           }
                         }
                       },
-                child: state.isLoading
-                    ? const CircularProgressIndicator()
-                    : const Text('Save Record'),
+                icon: state.isLoading
+                    ? const SizedBox(
+                        width: 24,
+                        height: 24,
+                        child: CircularProgressIndicator(
+                          color: Colors.white,
+                          strokeWidth: 2,
+                        ),
+                      )
+                    : const Icon(Icons.save),
+                label: const Text(
+                  'Save Record',
+                  style: TextStyle(fontSize: 16),
+                ),
+                style: FilledButton.styleFrom(
+                  padding: const EdgeInsets.symmetric(vertical: 16),
+                ),
               ),
             ],
           ),
         ),
       ),
+    );
+  }
+
+  Widget _buildDateCard(BuildContext context) {
+    return Card(
+      elevation: 0,
+      color: Theme.of(context).colorScheme.surfaceVariant,
+      child: ListTile(
+        leading: const Icon(Icons.calendar_today),
+        title: Text(
+          '${_selectedDate.year}/${_selectedDate.month}/${_selectedDate.day}',
+          style: const TextStyle(fontWeight: FontWeight.bold),
+        ),
+        subtitle: Text(
+          '${_selectedDate.hour}:${_selectedDate.minute.toString().padLeft(2, '0')}',
+        ),
+        trailing: Tooltip(
+          message: 'Change Date/Time',
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              IconButton(
+                icon: const Icon(Icons.edit_calendar),
+                onPressed: () => _selectDate(context),
+              ),
+              IconButton(
+                icon: const Icon(Icons.access_time),
+                onPressed: () => _selectTime(context),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildSectionTitle(String title) {
+    return Text(
+      title,
+      style: Theme.of(context).textTheme.titleMedium?.copyWith(
+        color: Theme.of(context).colorScheme.primary,
+        fontWeight: FontWeight.bold,
+      ),
+    );
+  }
+
+  Widget _buildNumberInput({
+    required TextEditingController controller,
+    required String label,
+    String? suffix,
+    required IconData icon,
+    bool isInt = false,
+  }) {
+    return TextFormField(
+      controller: controller,
+      decoration: InputDecoration(
+        labelText: label,
+        suffixText: suffix,
+        prefixIcon: Icon(icon, size: 20),
+        border: const OutlineInputBorder(),
+        contentPadding: const EdgeInsets.symmetric(
+          horizontal: 12,
+          vertical: 16,
+        ),
+      ),
+      keyboardType: TextInputType.numberWithOptions(decimal: !isInt),
     );
   }
 }
